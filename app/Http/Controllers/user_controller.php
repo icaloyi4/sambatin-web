@@ -10,7 +10,7 @@ class user_controller extends Controller
     public function login(Request $req)
     {
         $res =  DB::table('user')
-        ->select('user.id','user.nama','user.telpon','user.email','user.role as roleId', 'role.role as roleName', 'user.tgl_lahir')
+        ->select('user.id','user.nama','user.telpon','user.email','user.role as roleId', 'role.role as roleName', 'user.tgl_lahir', 'user.foto')
         ->join('role', 'user.role', '=','role.id')
         ->where('email', $req->email)
         ->where('password', $req->password)
@@ -90,11 +90,24 @@ class user_controller extends Controller
         
     }
 
+    public function searchFollowingUser(Request $req)
+    {
+        $user = DB::select("
+        Select u.id, u.nama 
+        From user u join folow f on u.id = f.id_responder where f.id_user={$req->id_user}");
+
+        return response()->json([
+            'code' => 200,
+            'message' => 'Sukses',
+            'data' => $user
+        ]);
+    }
+
     public function searchUser(Request $request)
     {
         $user = DB::select("
         Select 
-        user.id, user.nama, user.telpon,user.email,user.role as roleId, role.role as roleName, user.tgl_lahir, (select count(*) from content c where c.id_responder = user.id) as jmlAduan 
+        user.id, user.nama, user.telpon,user.email, 'user.foto',user.role as roleId, role.role as roleName, user.tgl_lahir, (select count(*) from content c where c.id_responder = user.id) as jmlAduan 
         From user user join role role on user.role = role.id where nama like '%{$request->name}%' and user.role = 3");
 
         return response()->json([
@@ -106,13 +119,24 @@ class user_controller extends Controller
 
     public function getUser(Request $request)
     {
-        $user = DB::select("
-        Select 
-        user.id, user.nama, user.telpon,user.email,user.role as roleId, role.role as roleName, user.tgl_lahir, 
-        (select count(*) from content c where c.id_responder = user.id) as jmlAduan,
-        (select count(*) from folow f where f.id_responder = user.id) as jmlFollower,
-        (select count(*) from folow f where f.id_responder = user.id and f.id_user = {$request->id_user}) as isFollow
-        From user user join role role on user.role = role.id where user.id ={$request->id_responder}");
+        if($request->isResponder){
+            $user = DB::select("
+                    Select 
+                    user.id, user.nama, user.telpon,user.email,user.role as roleId, role.role as roleName, user.tgl_lahir, 'user.foto',  
+                    (select count(*) from content c where c.id_responder = user.id) as jmlAduan,
+                    (select count(*) from folow f where f.id_responder = user.id) as jmlFollower,
+                    (select count(*) from folow f where f.id_responder = user.id and f.id_user = {$request->id_user}) as isFollow
+                    From user user join role role on user.role = role.id where user.id ={$request->id_responder}");
+        } else {
+            $user = DB::select("
+                    Select 
+                    user.id, user.nama, user.telpon,user.email,user.role as roleId, role.role as roleName, user.tgl_lahir, 'user.foto',  
+                    (select count(*) from content c where c.id_user = user.id) as jmlAduan,
+                    (select count(*) from folow f where f.id_user = user.id) as jmlFollower,
+                    false as isFollow
+                    From user user join role role on user.role = role.id where user.id ={$request->id_user}");
+        }
+        
 
         return response()->json([
             'code' => 200,

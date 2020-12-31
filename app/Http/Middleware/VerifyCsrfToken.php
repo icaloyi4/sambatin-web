@@ -17,6 +17,7 @@ class VerifyCsrfToken extends Middleware
         '/user/search',
         '/user',
         '/user/follow',
+        '/user/searchfollowinguser',
         '/content/contentbaseresponder',
         '/content/contentuser',
         '/content/insertcontent'

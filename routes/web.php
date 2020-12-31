@@ -18,6 +18,7 @@ Route::post('register', "user_controller@registerUser");
 Route::get('user/search', "user_controller@searchUser");
 Route::post('user', "user_controller@getUser");
 Route::post('user/follow', "user_controller@followResponder");
+Route::post('user/searchfollowinguser', "user_controller@searchFollowingUser");
 Route::post('content/contentbaseresponder', "content_controller@getContentBaseResponder");
 Route::post('content/contentuser', "content_controller@getContentBaseUserFollow");
 Route::post('content/insertcontent', "content_controller@insertContent");
